@@ -12,14 +12,14 @@ class CreateNote extends StatelessWidget {
 
   Future<void> addNote(BuildContext context, String title, String content) async {
     final String apiUrl = 'https://mynote.liara.run/Memo/New';
-    final String? token = TokenManager.getToken(); // Get the token from the TokenManager
+    final String? token = TokenManager.getToken();
 
     try {
       final response = await http.post(
         Uri.parse(apiUrl),
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token', // Add token to the Authorization header
+          'Authorization': 'Bearer $token',
         },
         body: jsonEncode({
           'title': title,
@@ -28,21 +28,19 @@ class CreateNote extends StatelessWidget {
       );
 
       if (response.statusCode == 201) {
-        // Note added successfully
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Note added successfully.'),
             backgroundColor: Colors.green,
           ),
         );
-        // Navigate back to main page and refresh data
+
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => MainPage()),
         );
 
       } else if (response.statusCode == 400) {
-        // Failed: 400
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Failed: 400'),

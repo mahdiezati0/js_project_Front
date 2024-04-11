@@ -79,7 +79,6 @@ class _MainPageState extends State<MainPage> {
         selectedNotes.clear();
       });
 
-      // Call the fetchData method to refresh the list after deletion
       await fetchData();
     } catch (error) {
       print('Error deleting notes: $error');

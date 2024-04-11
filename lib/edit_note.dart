@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:note_app/token_manager.dart';
-import 'package:note_app/main_page.dart'; // Import MainPage
+import 'package:note_app/main_page.dart';
 
 class EditNote extends StatelessWidget {
   final String memoId;
@@ -24,13 +24,13 @@ class EditNote extends StatelessWidget {
 
   Future<void> updateNote(BuildContext context) async {
     final String apiUrl = 'https://mynote.liara.run/Memo/Update';
-    final String? token = TokenManager.getToken(); // Get the token from the TokenManager
+    final String? token = TokenManager.getToken();
 
     try {
       final response = await http.patch(
         Uri.parse(apiUrl),
         headers: {
-          'Content-Type': 'application/json; charset=utf-8', // Specify UTF-8 encoding
+          'Content-Type': 'application/json; charset=utf-8',
           'Authorization': 'Bearer $token',
         },
         body: jsonEncode({
@@ -41,20 +41,17 @@ class EditNote extends StatelessWidget {
       );
 
       if (response.statusCode == 200) {
-        // Note updated successfully
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Note updated successfully.'),
             backgroundColor: Colors.green,
           ),
         );
-        // Navigate back to MainPage after successful update
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => MainPage()),
         );
       } else {
-        // Handle other status codes
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error updating note: ${response.statusCode}'),
@@ -165,7 +162,7 @@ class EditNote extends StatelessWidget {
                 SizedBox(height: 20),
                 TextField(
                   controller: contentController,
-                  maxLines: null, // Allow multiline input for description
+                  maxLines: null,
                   decoration: InputDecoration(
                     filled: true,
                     hintText: 'Start typing...',

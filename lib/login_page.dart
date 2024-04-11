@@ -29,8 +29,8 @@ class LoginPage extends StatelessWidget {
         if (responseBody['value'] != null &&
             responseBody['value']['token'] != null) {
           String token = responseBody['value']['token'];
-          TokenManager.setToken(token); // Set the token using the TokenManager
-          print('Data: $token'); // Print the token here
+          TokenManager.setToken(token);
+          print('Data: $token');
 
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -39,7 +39,6 @@ class LoginPage extends StatelessWidget {
             ),
           );
 
-          // Navigate to main_page.dart after successful login
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => MainPage()),

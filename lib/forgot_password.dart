@@ -41,7 +41,6 @@ class _ForgotPasswordState extends State<ForgotPassword> {
           messageColor = Colors.red;
         });
       } else {
-        // Handle other status codes
         print('Failed to send code. Status code: ${response.statusCode}');
         setState(() {
           message = 'Failed to send code. Please try again.';
@@ -49,7 +48,6 @@ class _ForgotPasswordState extends State<ForgotPassword> {
         });
       }
     } catch (e) {
-      // Handle errors
       print('Error: $e');
       setState(() {
         message = 'Error occurred. Please try again later.';
@@ -130,7 +128,6 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                         elevation: MaterialStateProperty.all(20),
                       ),
                       onPressed: () {
-                        // Call the function to send email verification code
                         print('Sending email verification code...');
                         sendEmailVerificationCode(emailController.text);
                       },
