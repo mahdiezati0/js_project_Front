@@ -10,7 +10,7 @@ class LoginPage extends StatelessWidget {
   const LoginPage({Key? key});
 
   Future<void> loginUser(BuildContext context, String email, String password) async {
-    final String apiUrl = 'https://mahdiezati0-js-project.liara.run/Account/Login';
+    final String apiUrl = 'https://mynote.liara.run/Account/Login';
 
     try {
       final response = await http.post(

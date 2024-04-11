@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:note_app/token_manager.dart';
+import 'package:note_app/main_page.dart'; // Import MainPage
 
 class EditNote extends StatelessWidget {
   final String memoId;
@@ -22,7 +23,7 @@ class EditNote extends StatelessWidget {
   }
 
   Future<void> updateNote(BuildContext context) async {
-    final String apiUrl = 'https://mahdiezati0-js-project.liara.run/Memo/Update';
+    final String apiUrl = 'https://mynote.liara.run/Memo/Update';
     final String? token = TokenManager.getToken(); // Get the token from the TokenManager
 
     try {
@@ -41,12 +42,16 @@ class EditNote extends StatelessWidget {
 
       if (response.statusCode == 200) {
         // Note updated successfully
-        print("/*******************************/  Note Saved /*******************************/");
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Note updated successfully.'),
             backgroundColor: Colors.green,
           ),
+        );
+        // Navigate back to MainPage after successful update
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => MainPage()),
         );
       } else {
         // Handle other status codes
@@ -67,8 +72,6 @@ class EditNote extends StatelessWidget {
       );
     }
   }
-
-
 
   @override
   Widget build(BuildContext context) {

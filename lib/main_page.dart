@@ -24,7 +24,7 @@ class _MainPageState extends State<MainPage> {
   }
 
   Future<void> fetchData() async {
-    final String apiUrl = 'https://mahdiezati0-js-project.liara.run/Memo/Get/1/100';
+    final String apiUrl = 'https://mynote.liara.run/Memo/Get/1/100';
 
     try {
       final response = await http.get(
@@ -52,7 +52,7 @@ class _MainPageState extends State<MainPage> {
   }
 
   Future<void> deleteSelectedNotes() async {
-    final String apiUrl = 'https://mahdiezati0-js-project.liara.run/Memo/delete/';
+    final String apiUrl = 'https://mynote.liara.run/Memo/delete/';
 
     try {
       final List<int> selectedIndices = selectedNotes.toList();

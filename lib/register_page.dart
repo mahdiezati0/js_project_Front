@@ -7,7 +7,7 @@ class RegisterPage extends StatelessWidget {
   const RegisterPage({Key? key});
 
   Future<bool> registerUser(String name, String email, String password) async {
-    final url = Uri.parse('https://mahdiezati0-js-project.liara.run/Account/Register');
+    final url = Uri.parse('https://mynote.liara.run/Account/Register');
 
     try {
       final response = await http.post(

@@ -15,7 +15,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
   Color messageColor = Colors.transparent;
 
   Future<void> sendEmailVerificationCode(String email) async {
-    final url = 'https://mahdiezati0-js-project.liara.run/Account/SendEmailVerificationCode';
+    final url = 'https://mynote.liara.run/Account/SendEmailVerificationCode';
 
     try {
       final response = await http.post(
