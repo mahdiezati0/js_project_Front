@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:note_app/register_page.dart';
 import 'package:note_app/forgot_password.dart';
+import 'package:note_app/main_page.dart';
+import 'package:note_app/token_manager.dart';
+
 class LoginPage extends StatelessWidget {
   const LoginPage({Key? key});
 
@@ -23,13 +26,23 @@ class LoginPage extends StatelessWidget {
 
       if (response.statusCode == 200 && responseBody['isSuccess']) {
         print('Login was successful!');
-        if (responseBody['value'] != null) {
-          print('Data: ${responseBody['value']}');
+        if (responseBody['value'] != null &&
+            responseBody['value']['token'] != null) {
+          String token = responseBody['value']['token'];
+          TokenManager.setToken(token); // Set the token using the TokenManager
+          print('Data: $token'); // Print the token here
+
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Login Successful'),
               backgroundColor: Colors.green,
             ),
+          );
+
+          // Navigate to main_page.dart after successful login
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => MainPage()),
           );
         }
       } else {
@@ -46,7 +59,8 @@ class LoginPage extends StatelessWidget {
           ),
         );
       }
-    } catch (error) {
+    }
+    catch (error) {
       print('Error during login: $error');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

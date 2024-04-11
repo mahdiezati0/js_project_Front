@@ -4,6 +4,8 @@ import 'package:note_app/register_page.dart';
 import 'package:note_app/login_page.dart';
 import 'package:note_app/first_page.dart';
 import 'package:note_app/slide_page.dart';
+import 'package:note_app/main_page.dart';
+import 'package:note_app/create_note.dart';
 
 void main() {
   runApp(const MyApp());
