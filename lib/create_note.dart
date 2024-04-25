@@ -43,7 +43,7 @@ class CreateNote extends StatelessWidget {
       } else if (response.statusCode == 400) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed: 400'),
+            content: Text('Please Check Your Internet Connection'),
             backgroundColor: Colors.red,
           ),
         );
@@ -51,7 +51,7 @@ class CreateNote extends StatelessWidget {
         // Initial
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Initial'),
+            content: Text('Please Check Your Internet Connection'),
             backgroundColor: Colors.blue,
           ),
         );
@@ -60,7 +60,7 @@ class CreateNote extends StatelessWidget {
       print('Error adding note: $error');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Error adding note. Please try again.'),
+          content: Text('Please Check Your Internet Connection'),
           backgroundColor: Colors.red,
         ),
       );

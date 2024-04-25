@@ -3,8 +3,15 @@ import 'package:http/http.dart' as http;
 import 'package:note_app/login_page.dart';
 import 'dart:convert';
 
-class RegisterPage extends StatelessWidget {
+class RegisterPage extends StatefulWidget {
   const RegisterPage({Key? key});
+
+  @override
+  _RegisterPageState createState() => _RegisterPageState();
+}
+
+class _RegisterPageState extends State<RegisterPage> {
+  bool _isLoading = false;
 
   Future<bool> registerUser(String name, String email, String password) async {
     final url = Uri.parse('https://mynote.liara.run/Account/Register');
@@ -31,10 +38,12 @@ class RegisterPage extends StatelessWidget {
         return false;
       }
     } catch (error) {
-      print('Error during registration: $error');
+      print('Please Check Your Internet Connection: $error');
       return false;
     }
   }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -135,56 +144,74 @@ class RegisterPage extends StatelessWidget {
                   ),
                 ),
                 SizedBox(height: 16),
-                SizedBox(
+                _isLoading
+                    ? CircularProgressIndicator()
+                    : SizedBox(
                   width: 340,
                   height: 55,
-                  child: TextButton(
-                    style: Theme.of(context).textButtonTheme.style!.copyWith(
-                      backgroundColor: MaterialStateProperty.all(Color(0xff00ADB5)),
-                      shadowColor: MaterialStateProperty.all(Colors.black),
-                      elevation: MaterialStateProperty.all(20),
-                    ),
-                    onPressed: () async {
-                      if (_formKey.currentState?.validate() ?? false) {
-                        String name = nameController.text;
-                        String email = emailController.text;
-                        String password = passwordController.text;
-                        String confirmPassword = confirmPasswordController.text;
+                  child: AnimatedSwitcher(
+                    duration: Duration(milliseconds: 500),
+                    transitionBuilder: (Widget child, Animation<double> animation) {
+                      return RotationTransition(
+                        turns: animation,
+                        child: child,
+                      );
+                    },
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        fixedSize: Size(350, 70),
+                        backgroundColor: Color(0xff00ADB5),
+                        shadowColor: Colors.black,
+                        elevation: 20,
+                      ),
+                      onPressed: () async {
+                        if (_formKey.currentState?.validate() ?? false) {
+                          setState(() {
+                            _isLoading = true;
+                          });
+                          String name = nameController.text;
+                          String email = emailController.text;
+                          String password = passwordController.text;
+                          String confirmPassword = confirmPasswordController.text;
 
-                        if (password == confirmPassword) {
-                          try {
-                            final isSuccess = await registerUser(name, email, password);
-                            String message = isSuccess ? 'Registration successful' : 'Registration failed';
+                          if (password == confirmPassword) {
+                            try {
+                              final isSuccess = await registerUser(name, email, password);
+                              String message = isSuccess ? 'Registration successful' : 'Registration failed';
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(message),
+                                  duration: Duration(seconds: 2),
+                                ),
+                              );
+                            } catch (error) {
+                              print('FAILED: $error');
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Error during registration'),
+                                  duration: Duration(seconds: 2),
+                                ),
+                              );
+                            }
+                          } else {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: Text(message),
+                                content: Text('Passwords do not match'),
                                 duration: Duration(seconds: 2),
-                              ),
-                            );
-                          } catch (error) {
-                            print('FAILED: $error');
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Error during registration'),
-                                duration: Duration(seconds: 2),
+                                backgroundColor: Colors.red,
                               ),
                             );
                           }
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Passwords do not match'),
-                              duration: Duration(seconds: 2),
-                              backgroundColor: Colors.red,
-                            ),
-                          );
+                          setState(() {
+                            _isLoading = false;
+                          });
                         }
-                      }
-                    },
-                    child: Text(
-                      'Sign Up',
-                      style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                        fontSize: 25,
+                      },
+                      child: Text(
+                        'Sign Up',
+                        style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                          fontSize: 25,
+                        ),
                       ),
                     ),
                   ),

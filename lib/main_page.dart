@@ -43,11 +43,11 @@ class _MainPageState extends State<MainPage> {
         });
       } else {
         print('Error fetching notes: ${response.statusCode}');
-        _showSnackBar('Error fetching notes: ${response.statusCode}', Colors.red);
+        _showSnackBar('Error Refresh Notes: ${response.statusCode}', Colors.red);
       }
     } catch (error) {
       print('Error fetching notes: $error');
-      _showSnackBar('Error fetching notes. Please try again.', Colors.red);
+      _showSnackBar('Please Check Your Internet Connection', Colors.red);
     }
   }
 
@@ -86,9 +86,6 @@ class _MainPageState extends State<MainPage> {
     }
     await fetchData();
   }
-
-
-
 
   void toggleNoteSelection(int index) {
     setState(() {
@@ -134,19 +131,22 @@ class _MainPageState extends State<MainPage> {
         leading: Padding(
           padding: const EdgeInsets.only(left: 10.0),
           child: IconButton(
+            onPressed: () {
+              if (isDeletingMode) {
+                setState(() {
+                  selectedNotes.clear(); // حذف همه چک باکس ها
+                  isDeletingMode = false; // غیرفعال کردن حالت حذف
+                });
+              }
+            },
             icon: Icon(
               isDeletingMode ? Icons.close : Icons.menu,
               color: Color(0xff2F2E41),
             ),
             iconSize: 50,
-            onPressed: () {
-              setState(() {
-                isDeletingMode = !isDeletingMode;
-                selectedNotes.clear();
-              });
-            },
           ),
         ),
+
         bottom: PreferredSize(
           preferredSize: Size.fromHeight(10.0),
           child: Padding(
@@ -197,7 +197,9 @@ class _MainPageState extends State<MainPage> {
                       title: Text(
                         note['title'] ?? '',
                         style: TextStyle(
+                          color: Color(0xFF00ACB4),
                           fontWeight: FontWeight.bold,
+                          fontSize: 30, // حجم بزرگتر برای عنوان
                         ),
                       ),
                       subtitle: Text(

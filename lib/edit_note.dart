@@ -63,7 +63,7 @@ class EditNote extends StatelessWidget {
       print('Error updating note: $error');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Error updating note. Please try again.'),
+          content: Text('Please Check Your Internet Connection'),
           backgroundColor: Colors.red,
         ),
       );

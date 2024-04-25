@@ -6,8 +6,17 @@ import 'package:note_app/forgot_password.dart';
 import 'package:note_app/main_page.dart';
 import 'package:note_app/token_manager.dart';
 
-class LoginPage extends StatelessWidget {
+class LoginPage extends StatefulWidget {
   const LoginPage({Key? key});
+
+  @override
+  _LoginPageState createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
+  bool isLoading = false;
+  TextEditingController emailController = TextEditingController();
+  TextEditingController passwordController = TextEditingController();
 
   Future<void> loginUser(BuildContext context, String email, String password) async {
     final String apiUrl = 'https://mynote.liara.run/Account/Login';
@@ -63,18 +72,19 @@ class LoginPage extends StatelessWidget {
       print('Error during login: $error');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Error during login. Please try again.'),
+          content: Text('Please Check Your Internet Connection'),
           backgroundColor: Colors.red,
         ),
       );
     }
+    setState(() {
+      isLoading = false;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     TextTheme textTheme = Theme.of(context).textTheme;
-    TextEditingController emailController = TextEditingController();
-    TextEditingController passwordController = TextEditingController();
 
     return Scaffold(
       appBar: AppBar(
@@ -152,14 +162,11 @@ class LoginPage extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       TextButton(
-
-
                         onPressed:()=>Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context)=>ForgotPassword())
+                            context,
+                            MaterialPageRoute(
+                                builder: (context)=>ForgotPassword())
                         ),
-
                         child: Text(
                           "I Forgot My Password.",
                           style: TextStyle(
@@ -184,20 +191,24 @@ class LoginPage extends StatelessWidget {
                   SizedBox(
                     width: 340,
                     height: 55,
-                    child: TextButton(
+                    child: isLoading
+                        ? CircularProgressIndicator()
+                        : TextButton(
                       style: Theme.of(context).textButtonTheme.style!.copyWith(
                         backgroundColor: MaterialStateProperty.all(Color(0xff00ADB5)),
                         shadowColor: MaterialStateProperty.all(Colors.black),
                         elevation: MaterialStateProperty.all(20),
                       ),
                       onPressed: () {
+                        setState(() {
+                          isLoading = true;
+                        });
                         loginUser(
                           context,
                           emailController.text,
                           passwordController.text,
                         );
                       },
-
                       child: Text(
                         'Sign in',
                         style: textTheme.bodyMedium!.copyWith(
@@ -206,7 +217,6 @@ class LoginPage extends StatelessWidget {
                       ),
                     ),
                   ),
-
                   SizedBox(
                     height: 14,
                   ),
