@@ -35,6 +35,18 @@ class NoteFolder extends StatelessWidget {
       final Map<String, dynamic> responseData = json.decode(response.body);
       final memoId = responseData['memoId'];
       print('Note saved successfully. Memo ID: $memoId');
+
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Note added successfully.'),
+            backgroundColor: Colors.green,
+          ),
+        );
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => MainPage()),
+        );
     } else {
       print('Failed to save note');
     }
