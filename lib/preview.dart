@@ -4,7 +4,16 @@ import 'package:flutter/widgets.dart';
 import 'edit_note.dart';
 
 class PreviewNote extends StatelessWidget {
-  const PreviewNote({super.key});
+  final String memoId;
+  final String initialTitle;
+  final String initialContent;
+
+  const PreviewNote({
+    required this.memoId,
+    required this.initialTitle,
+    required this.initialContent,
+    Key? key,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
