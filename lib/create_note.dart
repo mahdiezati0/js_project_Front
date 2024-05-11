@@ -11,7 +11,7 @@ class CreateNote extends StatelessWidget {
   CreateNote({Key? key}) : super(key: key);
 
   Future<void> addNote(BuildContext context, String title, String content) async {
-    final String apiUrl = 'https://mynote.liara.run/Memo/New';
+    final String apiUrl = 'https://notivous.liara.run/Memo/New';
     final String? token = TokenManager.getToken();
 
     try {

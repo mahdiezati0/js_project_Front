@@ -14,7 +14,7 @@ class _RegisterPageState extends State<RegisterPage> {
   bool _isLoading = false;
 
   Future<bool> registerUser(String name, String email, String password) async {
-    final url = Uri.parse('https://mynote.liara.run/Account/Register');
+    final url = Uri.parse('https://notivous.liara.run/Account/Register');
 
     try {
       final response = await http.post(

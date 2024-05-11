@@ -2,12 +2,15 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:note_app/token_manager.dart';
+import 'package:note_app/main_page.dart';
 
 class NoteFolder extends StatelessWidget {
-  const NoteFolder({Key? key});
+  final String categoryId;
 
-  Future<void> saveNote(String title, String content, String token) async {
-    final url = Uri.parse('https://mynote.liara.run/Memo/New');
+  const NoteFolder({Key? key, required this.categoryId}) : super(key: key);
+
+  Future<void> saveNote(String title, String content, String token, BuildContext context) async {
+    final url = Uri.parse('https://notivous.liara.run/Memo/New');
     final String? token = TokenManager.getToken();
 
     print('Sending data to API:');
@@ -30,27 +33,45 @@ class NoteFolder extends StatelessWidget {
     print('API Response:');
     print(response.body);
 
-    if (response.statusCode == 200) {
+    if (response.statusCode == 201) {
       // Note saved successfully
       final Map<String, dynamic> responseData = json.decode(response.body);
-      final memoId = responseData['memoId'];
+      final memoId = responseData['value'];
       print('Note saved successfully. Memo ID: $memoId');
 
-      ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Note added successfully.'),
-            backgroundColor: Colors.green,
-          ),
-        );
+      // Now, add the note to the category
+      await addToCategory(memoId, categoryId, token, context);
 
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => MainPage()),
-        );
     } else {
       print('Failed to save note');
     }
   }
+
+  Future<void> addToCategory(String memoId, String categoryId, String? token, BuildContext context) async {
+    final addToCategoryUrl = Uri.parse('https://notivous.liara.run/Memo/AddToCategory?memoId=$memoId&categoryId=$categoryId');
+    print('addToCategory*********memoId*********. memoId: $memoId');
+    print('addToCategory*********addToCategory*********. categoryId: $categoryId');
+
+    try {
+      final response = await http.patch( // تغییر اینجا
+        addToCategoryUrl,
+        headers: <String, String>{
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        // Successfully added to category
+        print('Added note to category successfully');
+        Navigator.of(context).push(MaterialPageRoute(builder: (context) => MainPage()));
+      } else {
+        debugPrint('Failed to create category. Error: ${response.statusCode}');
+      }
+    } catch (e) {
+      debugPrint('Error adding note to category: $e');
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -94,7 +115,7 @@ class NoteFolder extends StatelessWidget {
                     )),
                   ),
                   onPressed: () {
-                    saveNote(title, content, 'your_token_here');
+                    saveNote(title, content, 'your_token_here', context);
                   },
                   child: Text(
                     "Add Note",

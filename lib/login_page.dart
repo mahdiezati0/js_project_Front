@@ -19,7 +19,7 @@ class _LoginPageState extends State<LoginPage> {
   TextEditingController passwordController = TextEditingController();
 
   Future<void> loginUser(BuildContext context, String email, String password) async {
-    final String apiUrl = 'https://mynote.liara.run/Account/Login';
+    final String apiUrl = 'https://notivous.liara.run/Account/Login';
 
     try {
       final response = await http.post(

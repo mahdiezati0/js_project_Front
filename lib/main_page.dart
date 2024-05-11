@@ -3,10 +3,12 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:note_app/create_folder.dart';
+import 'package:note_app/edit_folder.dart';
 import 'package:note_app/create_note.dart';
 import 'package:note_app/token_manager.dart';
 import 'package:note_app/edit_note.dart';
-import 'preview.dart';
+import 'package:note_app/note_folder.dart';
+import 'package:note_app/show_folder.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({Key? key}) : super(key: key);
@@ -28,10 +30,12 @@ class _MainPageState extends State<MainPage> {
   void initState() {
     super.initState();
     _selectedOption = 'date';
-    fetchData();
+    fetchNoteData();
+    fetchFolderData();
   }
+
   Future<void> _fetchDataWithSearch(String query) async {
-    final String searchUrl = 'https://mynote.liara.run/Memo/Search?Page=1&PageSize=100&Parameter=$query';
+    final String searchUrl = 'https://notivous.liara.run/Memo/Search?Parameter=$query&SortType=1';
 
     try {
       final response = await http.get(
@@ -63,15 +67,13 @@ class _MainPageState extends State<MainPage> {
     if (query.isNotEmpty) {
       _fetchDataWithSearch(query);
     } else {
-      // If query is empty, fetch default data
-      fetchData();
+      fetchNoteData();
     }
   }
 
 
-  Future<void> fetchData() async {
-    final String notesUrl = 'https://mynote.liara.run/Memo/Get/1/100';
-    final String foldersUrl = 'https://mynote.liara.run/Memo/GetCategories';
+  Future<void> fetchNoteData() async {
+    final String notesUrl = 'https://notivous.liara.run/Memo/Get';
 
     try {
       final notesResponse = await http.get(
@@ -82,6 +84,26 @@ class _MainPageState extends State<MainPage> {
         },
       );
 
+      if (notesResponse.statusCode == 200) {
+        final notesData = json.decode(notesResponse.body);
+
+        setState(() {
+          notes = List<Map<String, dynamic>>.from(notesData['value']);
+        });
+      } else {
+        print('Error fetching notes data: ${notesResponse.statusCode}');
+        _showSnackBar('Error fetching notes data', Colors.red);
+      }
+    } catch (error) {
+      print('Error fetching notes data: $error');
+      _showSnackBar('Please Check Your Internet Connection', Colors.red);
+    }
+  }
+
+  Future<void> fetchFolderData() async {
+    final String foldersUrl = 'https://notivous.liara.run/Category/Get';
+
+    try {
       final foldersResponse = await http.get(
         Uri.parse(foldersUrl),
         headers: {
@@ -90,27 +112,25 @@ class _MainPageState extends State<MainPage> {
         },
       );
 
-      if (notesResponse.statusCode == 200 && foldersResponse.statusCode == 200) {
-        final notesData = json.decode(notesResponse.body);
+      if (foldersResponse.statusCode == 200) {
         final foldersData = json.decode(foldersResponse.body);
 
         setState(() {
-          notes = List<Map<String, dynamic>>.from(notesData['value']);
           folders = List<Map<String, dynamic>>.from(foldersData['value']);
         });
       } else {
-        print('Error fetching data: ${notesResponse.statusCode}');
-        _showSnackBar('Error fetching data', Colors.red);
+        print('Error fetching folders data: ${foldersResponse.statusCode}');
+        _showSnackBar('Error fetching folders data', Colors.red);
       }
     } catch (error) {
-      print('Error fetching data: $error');
+      print('Error fetching folders data: $error');
       _showSnackBar('Please Check Your Internet Connection', Colors.red);
     }
   }
 
   Future<void> fetchDataWithSort(int sortType) async {
     final String searchUrl =
-        'https://mynote.liara.run/Memo/Search?Page=1&PageSize=100&SortType=$sortType';
+        'https://notivous.liara.run/Memo/Search?SortType=$sortType';
 
     try {
       final response = await http.get(
@@ -126,8 +146,7 @@ class _MainPageState extends State<MainPage> {
         setState(() {
           notes = List<Map<String, dynamic>>.from(responseData['value']);
         });
-        // Log the successful sort
-        print('Sort operation successful.');
+        print('Sort operation successful');
       } else {
         print('Error fetching sorted data: ${response.statusCode}');
         _showSnackBar('Error fetching sorted data', Colors.red);
@@ -138,15 +157,16 @@ class _MainPageState extends State<MainPage> {
     }
   }
 
-
-  Future<void> deleteSelectedNotes() async {
-    final String apiUrl = 'https://mynote.liara.run/Memo/delete/';
+  Future<void> deleteSelectedFolders() async {
+    final String apiUrl = 'https://notivous.liara.run/Category/Delete/';
+    bool isDeleted = false;
 
     try {
-      final List<int> selectedIndices = selectedNotes.toList();
-      await Future.wait(selectedIndices.map((int index) async {
+      final List<int> selectedFolderIndices = selectedNotes.toList();
+      await Future.wait(selectedFolderIndices.map((int index) async {
+        final folder = folders[index];
         final response = await http.delete(
-          Uri.parse('$apiUrl${notes[index]['id']}'),
+          Uri.parse('$apiUrl${folder['id']}'),
           headers: {
             'Content-Type': 'application/json',
             'Authorization': 'Bearer ${TokenManager.getToken()}',
@@ -155,25 +175,68 @@ class _MainPageState extends State<MainPage> {
 
         if (response.statusCode == 200) {
           setState(() {
-            notes.removeAt(index);
-            _showSnackBar('Note Deleted Successfully', Colors.green);
+            folders.removeAt(index);
+            isDeleted = true;
           });
         } else {
-          print('Error deleting note: ${response.statusCode}');
-          _showSnackBar(
-              'Error deleting note: ${response.statusCode}', Colors.red);
+          print('Error deleting folder: ${response.statusCode}');
         }
       }));
+
       setState(() {
         selectedNotes.clear();
       });
 
-      await fetchData();
+    } catch (error) {
+      print('Error deleting folders: $error');
+    }
+
+    if (isDeleted) {
+      _showSnackBar('Folder Deleted successful.', Colors.green);
+    } else {
+      _showSnackBar('Error in Delting Folder.', Colors.red);
+    }
+  }
+
+
+  Future<void> deleteSelectedNotes() async {
+    final String apiUrl = 'https://notivous.liara.run/Memo/Delete/';
+    bool isDeleted = false;
+
+    try {
+      final List<int> selectedIndices = selectedNotes.toList();
+      await Future.wait(selectedIndices.map((int index) async {
+        final note = notes[index - folders.length]; // Adjust index for notes
+        final response = await http.delete(
+          Uri.parse('$apiUrl${note['id']}'),
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ${TokenManager.getToken()}',
+          },
+        );
+        if (response.statusCode == 200) {
+          setState(() {
+            notes.removeAt(index - folders.length);
+            isDeleted = true;
+          });
+        } else {
+          print('Error deleting note: ${response.statusCode}');
+        }
+      }));
+
+      setState(() {
+        selectedNotes.clear();
+      });
+
     } catch (error) {
       print('Error deleting notes: $error');
-      _showSnackBar('Error deleting notes. Please try again.', Colors.red);
     }
-    await fetchData();
+
+    if (isDeleted) {
+      _showSnackBar('Note Deleted successful.', Colors.green);
+    } else {
+      _showSnackBar('Error In Deleting Note', Colors.red);
+    }
   }
 
   void toggleNoteSelection(int index) {
@@ -278,7 +341,6 @@ class _MainPageState extends State<MainPage> {
                   ),
                   style: TextStyle(color: Colors.black),
                   onChanged: _onSearch,
-
                 ),
               ),
             ),
@@ -439,104 +501,161 @@ class _MainPageState extends State<MainPage> {
             child: SafeArea(
               child: RefreshIndicator(
                 color: Color(0xff00ADB5),
-                onRefresh: fetchData,
+                onRefresh: () async {
+                  await fetchNoteData();
+                  fetchFolderData();
+                },
                 child: ListView.builder(
-                  itemCount: notes.length + folders.length,
-                  itemBuilder: (context, index) {
-                    if (index < folders.length) {
-                      final folder = folders[index];
-                      return Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Card(
-                          color: Color(0xFF00ACB5),
-                          child: ListTile(
-                            leading: Image.asset(
-                              "assets/images/Folder1.png",
-                              width: 24,
-                              height: 24,
-                            ),
-                            title: Text(
-                              folder['name'] ?? '',
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 24,
-                              ),
-                            ),
-                            onTap: () {
-                              // Implement folder tap action here
-                            },
+                itemCount: notes.length + folders.length,
+                itemBuilder: (context, index) {
+                  if (index < folders.length) {
+                    final folder = folders[index];
+                    return Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Card(
+                        color: Color(0xFF00ACB5),
+                        child: ListTile(
+                          leading: Image.asset(
+                            "assets/images/Folder1.png",
+                            width: 24,
+                            height: 24,
                           ),
-                        ),
-                      );
-                    } else {
-                      final note = notes[index - folders.length];
-                      return GestureDetector(
-                        onLongPress: () {
-                          setState(() {
-                            isDeletingMode = true;
-                            selectedNotes.add(index);
-                          });
-                        },
-                        onTap: () {
-                          if (isDeletingMode) {
-                            toggleNoteSelection(index);
-                          } else {
+                          title: Row(
+                            children: [
+                              Text(
+                                folder['name'] ?? '',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 24,
+                                ),
+                              ),
+                              Spacer(),
+                              IconButton(
+                                icon: Icon(Icons.edit),
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => EditFolder(
+                                        categoryId: folders[index]['id'],
+                                        title: folders[index]['name'],
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                              IconButton(
+                                icon: Icon(Icons.add),
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => NoteFolder(categoryId: folders[index]['id']),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ],
+                          ),
+                          onTap: () {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => EditNote(
-                                  memoId: note['id'],
-                                  initialTitle: note['title'] ?? '',
-                                  initialContent: note['content'] ?? '',
+                                builder: (context) => ShowFolder(
+                                  categoryId: folders[index]['id'],
+                                  title: folders[index]['name'],
                                 ),
                               ),
                             );
-                          }
-                        },
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Card(
-                            elevation: 3,
-                            child: ListTile(
-                              title: Text(
-                                note['title'] ?? '',
-                                style: TextStyle(
-                                  color: Color(0xFF00ACB4),
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 30,
-                                ),
+                          },
+                          trailing: isDeletingMode
+                              ? Checkbox(
+                            value: selectedNotes.contains(index),
+                            onChanged: (value) {
+                              toggleNoteSelection(index);
+                            },
+                            checkColor: Colors.white,
+                            activeColor: Colors.red,
+                          )
+                              : null,
+                        ),
+                      ),
+                    );
+
+                  } else {
+                    final note = notes[index - folders.length];
+                    return GestureDetector(
+                      onLongPress: () {
+                        setState(() {
+                          isDeletingMode = true;
+                          selectedNotes.add(index);
+                        });
+                      },
+                      onTap: () {
+                        if (isDeletingMode) {
+                          toggleNoteSelection(index);
+                        } else {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => EditNote(
+                                memoId: note['id'],
+                                initialTitle: note['title'] ?? '',
+                                initialContent: note['content'] ?? '',
                               ),
-                              subtitle: Text(
-                                note['content'] ?? '',
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              trailing: isDeletingMode
-                                  ? Checkbox(
-                                value: selectedNotes.contains(index),
-                                onChanged: (value) {
-                                  toggleNoteSelection(index);
-                                },
-                                checkColor: Colors.white,
-                                activeColor: Colors.red,
-                              )
-                                  : null,
                             ),
+                          );
+                        }
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Card(
+                          elevation: 3,
+                          child: ListTile(
+                            title: Text(
+                              note['title'] ?? '',
+                              style: TextStyle(
+                                color: Color(0xFF00ACB4),
+                                fontWeight: FontWeight.bold,
+                                fontSize: 30,
+                              ),
+                            ),
+                            subtitle: Text(
+                              note['content'] ?? '',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            trailing: isDeletingMode
+                                ? Checkbox(
+                              value: selectedNotes.contains(index),
+                              onChanged: (value) {
+                                toggleNoteSelection(index);
+                              },
+                              checkColor: Colors.white,
+                              activeColor: Colors.red,
+                            )
+                                : null,
                           ),
                         ),
-                      );
-                    }
-                  },
-                ),
+                      ),
+                    );
+                  }
+                },
+              ),
+
               ),
             ),
           ),
         ],
       ),
+
       floatingActionButton: isDeletingMode
           ? FloatingActionButton(
-        onPressed: deleteSelectedNotes,
+        onPressed: () {
+          deleteSelectedFolders();
+          deleteSelectedNotes();
+        },
         child: Icon(
           Icons.delete,
           size: 30,
@@ -546,7 +665,7 @@ class _MainPageState extends State<MainPage> {
           : Container(
         height: 66,
         width: 66,
-        decoration: BoxDecoration(
+      decoration: BoxDecoration(
           color: Color(0xff00ADB5),
           borderRadius: BorderRadius.circular(30.0),
           boxShadow: [

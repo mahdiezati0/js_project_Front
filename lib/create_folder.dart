@@ -8,12 +8,12 @@
     const CreateFolder({super.key});
 
     Future<void> _createCategory(String categoryName) async {
-      final url = Uri.parse('https://mynote.liara.run/Memo/CreateCategory?name=$categoryName');
+      final url = Uri.parse('https://notivous.liara.run/Category/Create');
       final String? token = TokenManager.getToken();
       print('Category Name: $categoryName');
 
       final Map<String, dynamic> requestBody = {
-        'name': categoryName,
+        'title': categoryName,
       };
       final String jsonBody = jsonEncode(requestBody);
       print('jsonBody Body: $jsonBody');
@@ -29,7 +29,7 @@
       print('Response: ${response.body}');
 
 
-      if (response.statusCode == 200) {
+      if (response.statusCode == 202) {
         debugPrint('Category created successfully');
       } else {
         debugPrint('Failed to create category. Error: ${response.statusCode}');
@@ -133,7 +133,7 @@
                           await _createCategory(folderNameController.text);
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => NoteFolder()),
+                            MaterialPageRoute(builder: (context) => NoteFolder(categoryId: 'your_category_id_here')),
                           );
                         },
                         child: Text(

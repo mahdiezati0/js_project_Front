@@ -23,7 +23,7 @@ class EditNote extends StatelessWidget {
   }
 
   Future<void> updateNote(BuildContext context) async {
-    final String apiUrl = 'https://mynote.liara.run/Memo/Update';
+    final String apiUrl = 'https://notivous.liara.run/Memo/Update';
     final String? token = TokenManager.getToken();
 
     try {
