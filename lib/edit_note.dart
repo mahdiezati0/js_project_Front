@@ -1,8 +1,12 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:note_app/token_manager.dart';
 import 'package:note_app/main_page.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:path_provider/path_provider.dart';
 import 'package:share/share.dart';
 
 class EditNote extends StatelessWidget {
@@ -71,6 +75,62 @@ class EditNote extends StatelessWidget {
     }
   }
 
+  Future<void> createPdfAndShare(BuildContext context) async {
+    final pdf = pw.Document();
+
+    pdf.addPage(
+      pw.Page(
+        pageFormat: PdfPageFormat.a4,
+        margin: pw.EdgeInsets.all(32),
+        build: (pw.Context context) {
+          return pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.Container(
+                padding: pw.EdgeInsets.all(16),
+                decoration: pw.BoxDecoration(
+                  color: PdfColors.blueGrey900,
+                  borderRadius: pw.BorderRadius.circular(4),
+                ),
+                alignment: pw.Alignment.center,
+                child: pw.Text(
+                  '${titleController.text}',
+                  textAlign: pw.TextAlign.center,
+                  style: pw.TextStyle(
+                    fontSize: 24,
+                    fontWeight: pw.FontWeight.bold,
+                    color: PdfColors.white,
+                  ),
+                ),
+              ),
+              pw.SizedBox(height: 20),
+              pw.Container(
+                padding: pw.EdgeInsets.all(16),
+                decoration: pw.BoxDecoration(
+                  color: PdfColors.grey300,
+                  borderRadius: pw.BorderRadius.circular(4),
+                ),
+                child: pw.Text(
+                  '${contentController.text}',
+                  style: pw.TextStyle(
+                    fontSize: 18,
+                    color: PdfColors.black,
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+
+    final output = await getTemporaryDirectory();
+    final file = File("${output.path}/${titleController.text}.pdf");
+    await file.writeAsBytes(await pdf.save());
+
+    Share.shareFiles([file.path], text: '${titleController.text}');
+  }
+
   @override
   Widget build(BuildContext context) {
     TextTheme textTheme = Theme.of(context).textTheme;
@@ -109,10 +169,7 @@ class EditNote extends StatelessWidget {
                   )),
                 ),
                 onPressed: () {
-                  Share.share(
-                    'Title: ${titleController.text}\n\nContent: ${contentController.text}',
-                    subject: 'Note: ${titleController.text}',
-                  );
+                  createPdfAndShare(context);
                 },
                 child: Align(
                   alignment: Alignment.centerLeft,
