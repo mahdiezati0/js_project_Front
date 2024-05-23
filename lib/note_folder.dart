@@ -9,7 +9,7 @@ class NoteFolder extends StatelessWidget {
 
   const NoteFolder({Key? key, required this.categoryId}) : super(key: key);
 
-  Future<void> saveNote(String title, String content, String token, BuildContext context) async {
+  Future<void> saveNote(String title, String content, String? token, BuildContext context) async {
     final url = Uri.parse('https://notivous.liara.run/Memo/New');
     final String? token = TokenManager.getToken();
 
@@ -53,7 +53,7 @@ class NoteFolder extends StatelessWidget {
     print('addToCategory*********addToCategory*********. categoryId: $categoryId');
 
     try {
-      final response = await http.patch( // تغییر اینجا
+      final response = await http.patch(
         addToCategoryUrl,
         headers: <String, String>{
           'Authorization': 'Bearer $token',
@@ -115,12 +115,12 @@ class NoteFolder extends StatelessWidget {
                     )),
                   ),
                   onPressed: () {
-                    saveNote(title, content, 'your_token_here', context);
+                    saveNote(title, content, TokenManager.token, context);
                   },
                   child: Text(
                     "Add Note",
                     style: TextStyle(
-                      color: Color(0xff2F2E41),
+                      color: Color(0xffffffff),
                       fontFamily: "Mulish",
                       fontWeight: FontWeight.bold,
                       fontSize: 19,
@@ -150,7 +150,7 @@ class NoteFolder extends StatelessWidget {
                     decoration: InputDecoration(
                       filled: true,
                       hintText: 'Title',
-                      fillColor: Color(0xff3F3D56),
+                      fillColor: Color(0xffffffff),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
                         borderSide: BorderSide(color: Color(0xff3F3D56)),
@@ -171,11 +171,11 @@ class NoteFolder extends StatelessWidget {
                   onChanged: (value) {
                     content = value;
                   },
-                  maxLines: null, // Allow multiline input for description
+                  maxLines: null,
                   decoration: InputDecoration(
                     filled: true,
                     hintText: 'Start typing...',
-                    fillColor: Color(0xff3F3D56),
+                    fillColor: Color(0xffffffff),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
                       borderSide: BorderSide(color: Color(0xff3F3D56)),

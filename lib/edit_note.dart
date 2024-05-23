@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:note_app/token_manager.dart';
 import 'package:note_app/main_page.dart';
+import 'package:share/share.dart';
 
 class EditNote extends StatelessWidget {
   final String memoId;
@@ -93,39 +94,66 @@ class EditNote extends StatelessWidget {
             },
           ),
         ),
-        title: Padding(
-          padding: const EdgeInsets.only(top: 8.0, right: 10),
-          child: Align(
-            alignment: Alignment.centerRight,
-            child: Padding(
-              padding: const EdgeInsets.only(top: 12.0, right: 10),
-              child: SizedBox(
-                height: 41,
-                width: 106,
-                child: TextButton(
-                  style: Theme.of(context).textButtonTheme.style!.copyWith(
-                    backgroundColor: MaterialStateProperty.all(Color(0xff00ADB5)),
-                    shape: MaterialStateProperty.all(RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    )),
-                  ),
-                  onPressed: () {
-                    updateNote(context);
-                  },
-                  child: Text(
-                    "Save",
-                    style: TextStyle(
-                      color: Color(0xff2F2E41),
-                      fontFamily: "Mulish",
-                      fontWeight: FontWeight.bold,
-                      fontSize: 19,
-                    ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(top: 20.0, right: 7),
+            child: SizedBox(
+              height: 42,
+              width: 42,
+              child: TextButton(
+                style: Theme.of(context).textButtonTheme.style!.copyWith(
+                  backgroundColor:
+                  MaterialStateProperty.all(Color(0xff00ADB5)),
+                  shape: MaterialStateProperty.all(RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  )),
+                ),
+                onPressed: () {
+                  Share.share(
+                    'Title: ${titleController.text}\n\nContent: ${contentController.text}',
+                    subject: 'Note: ${titleController.text}',
+                  );
+                },
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Icon(
+                    Icons.share_sharp,
+                    color: Color(0xff2F2E41),
+                    size: 22,
                   ),
                 ),
               ),
             ),
           ),
-        ),
+          Padding(
+            padding: const EdgeInsets.only(top: 20.0, right: 20),
+            child: SizedBox(
+              height: 41,
+              width: 106,
+              child: TextButton(
+                style: Theme.of(context).textButtonTheme.style!.copyWith(
+                  backgroundColor:
+                  MaterialStateProperty.all(Color(0xff00ADB5)),
+                  shape: MaterialStateProperty.all(RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  )),
+                ),
+                onPressed: () {
+                  updateNote(context);
+                },
+                child: Text(
+                  "Save",
+                  style: TextStyle(
+                    color: Color(0xff2F2E41),
+                    fontFamily: "Mulish",
+                    fontWeight: FontWeight.bold,
+                    fontSize: 19,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
       body: SafeArea(
         child: SingleChildScrollView(
