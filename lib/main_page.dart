@@ -9,6 +9,7 @@ import 'package:note_app/token_manager.dart';
 import 'package:note_app/edit_note.dart';
 import 'package:note_app/note_folder.dart';
 import 'package:note_app/show_folder.dart';
+import 'setting.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({Key? key}) : super(key: key);
@@ -277,12 +278,20 @@ class _MainPageState extends State<MainPage> {
                   child: IconButton(
                     onPressed: () {
                       if (isDeletingMode) {
+                        // این قسمت برای وضعیت حذف در صفحه است که همه عناصر انتخاب شده را پاک می‌کند و از حالت حذف خارج می‌شود
                         setState(() {
                           selectedNotes.clear();
                           isDeletingMode = false;
                         });
+                      } else {
+                        // این قسمت برای وقتی که در حالت حذف نیستیم و روی آیکون کلیک می‌کنیم، به صفحه تنظیمات منتقل می‌شویم
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => SettingPage()),
+                        );
                       }
                     },
+
                     icon: Icon(
                       isDeletingMode ? Icons.close : Icons.settings_rounded,
                       color: Color(0xff2F2E41),

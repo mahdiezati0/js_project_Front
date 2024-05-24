@@ -128,7 +128,7 @@ class _ShowFolderState extends State<ShowFolder> {
           child: Padding(
             padding: const EdgeInsets.only(top: 12.0, right: 10),
             child: Text(
-              widget.title, // استفاده از عنوان پوشه
+              widget.title,
               style: TextStyle(
                 color: Color(0xff2F2E41),
                 fontFamily: "Mulish",
@@ -154,7 +154,7 @@ class _ShowFolderState extends State<ShowFolder> {
                 } else {
                   Navigator.pushReplacement(
                     context,
-                    MaterialPageRoute(builder: (context) => MainPage()), // تغییر به صفحه اصلی
+                    MaterialPageRoute(builder: (context) => MainPage()),
                   );
                 }
               });
