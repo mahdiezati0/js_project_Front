@@ -366,10 +366,10 @@ class _CreateNoteState extends State<CreateNote> {
                     ),
                   ),
                 ),
-                SizedBox(height: 20),
-                SizedBox(
-                  width: 341,
-                  height: 55,
+                // SizedBox(height: 20),
+                // SizedBox(
+                //   width: 341,
+                //   height: 55,
                   // child: TextField(
                   //   controller: colorController,
                   //   decoration: InputDecoration(
@@ -390,16 +390,42 @@ class _CreateNoteState extends State<CreateNote> {
                   //     ),
                   //   ),
                   // ),
+                //),
+                Column(
+                  children: <Widget>[
+                    SizedBox(height: 20),
+                    _image == null
+                        ? Text(
+                      'No image selected.',
+                      style: TextStyle(
+                        color: Colors.black, 
+                        fontSize: 23,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: "Mulish",
+                      ),
+                    )
+                        : Image.file(_image!),
+                    SizedBox(height: 20),
+                    ElevatedButton(
+                      onPressed: _pickImage,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Color(0xFF00ACB5),
+                        textStyle: TextStyle(color: Colors.white),
+                      ),
+                      child: Text(
+                        'Pick Image',
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 23,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: "Mulish",
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                SizedBox(height: 20),
-                _image == null
-                    ? Text('No image selected.')
-                    : Image.file(_image!),
-                SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: _pickImage,
-                  child: Text('Pick Image'),
-                ),
+
+
               ],
             ),
           ),

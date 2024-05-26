@@ -301,7 +301,18 @@ class _EditNoteState extends State<EditNote> {
                     ],
                   ),
                 if (attachmentBase64 == null)
-                  Text('No attachment found for this memo.'),
+                  Center(
+                    child: Text(
+                      'No Image Selected',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                        fontFamily: "Mulish",
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  )
               ],
             ),
           ),
