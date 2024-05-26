@@ -8,7 +8,7 @@ class CreateFolder extends StatelessWidget {
   const CreateFolder({Key? key});
 
   Future<void> _createCategory(BuildContext context, String categoryName) async {
-    final url = Uri.parse('https://notivous.liara.run/Category/Create');
+    final url = Uri.parse('http://78.157.60.108/Category/Create');
     final String? token = TokenManager.getToken();
     print('Category Name: $categoryName');
 

@@ -10,7 +10,7 @@ class NoteFolder extends StatelessWidget {
   const NoteFolder({Key? key, required this.categoryId}) : super(key: key);
 
   Future<void> saveNote(String title, String content, String? token, BuildContext context) async {
-    final url = Uri.parse('https://notivous.liara.run/Memo/New');
+    final url = Uri.parse('http://78.157.60.108/Memo/New');
     final String? token = TokenManager.getToken();
 
     print('Sending data to API:');
@@ -48,7 +48,7 @@ class NoteFolder extends StatelessWidget {
   }
 
   Future<void> addToCategory(String memoId, String categoryId, String? token, BuildContext context) async {
-    final addToCategoryUrl = Uri.parse('https://notivous.liara.run/Memo/AddToCategory?memoId=$memoId&categoryId=$categoryId');
+    final addToCategoryUrl = Uri.parse('http://78.157.60.108/Memo/AddToCategory?memoId=$memoId&categoryId=$categoryId');
     print('addToCategory*********memoId*********. memoId: $memoId');
     print('addToCategory*********addToCategory*********. categoryId: $categoryId');
 

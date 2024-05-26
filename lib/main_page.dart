@@ -36,7 +36,7 @@ class _MainPageState extends State<MainPage> {
   }
 
   Future<void> _fetchDataWithSearch(String query) async {
-    final String searchUrl = 'https://notivous.liara.run/Memo/Search?Parameter=$query&SortType=1';
+    final String searchUrl = 'http://78.157.60.108/Memo/Search?Parameter=$query&SortType=1';
 
     try {
       final response = await http.get(
@@ -74,7 +74,7 @@ class _MainPageState extends State<MainPage> {
 
 
   Future<void> fetchNoteData() async {
-    final String notesUrl = 'https://notivous.liara.run/Memo/Get';
+    final String notesUrl = 'http://78.157.60.108/Memo/Get';
 
     try {
       final notesResponse = await http.get(
@@ -102,7 +102,7 @@ class _MainPageState extends State<MainPage> {
   }
 
   Future<void> fetchFolderData() async {
-    final String foldersUrl = 'https://notivous.liara.run/Category/Get';
+    final String foldersUrl = 'http://78.157.60.108/Category/Get';
 
     try {
       final foldersResponse = await http.get(
@@ -131,7 +131,7 @@ class _MainPageState extends State<MainPage> {
 
   Future<void> fetchDataWithSort(int sortType) async {
     final String searchUrl =
-        'https://notivous.liara.run/Memo/Search?SortType=$sortType';
+        'http://78.157.60.108/Memo/Search?SortType=$sortType';
 
     try {
       final response = await http.get(
@@ -159,7 +159,7 @@ class _MainPageState extends State<MainPage> {
   }
 
   Future<void> deleteSelectedFolders() async {
-    final String apiUrl = 'https://notivous.liara.run/Category/Delete/';
+    final String apiUrl = 'http://78.157.60.108/Category/Delete/';
     bool isDeleted = false;
 
     try {
@@ -201,7 +201,7 @@ class _MainPageState extends State<MainPage> {
 
 
   Future<void> deleteSelectedNotes() async {
-    final String apiUrl = 'https://notivous.liara.run/Memo/Delete/';
+    final String apiUrl = 'http://78.157.60.108/Memo/Delete/';
     bool isDeleted = false;
 
     try {

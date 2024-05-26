@@ -12,7 +12,7 @@ class EditFolder extends StatelessWidget {
       : super(key: key);
 
   Future<void> updateFolder(BuildContext context, String categoryId, String title) async {
-    final String apiUrl = 'https://notivous.liara.run/Category/Update';
+    final String apiUrl = 'http://78.157.60.108/Category/Update';
     final String? token = TokenManager.getToken();
 
     try {

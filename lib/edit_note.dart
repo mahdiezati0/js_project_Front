@@ -1,34 +1,41 @@
 import 'dart:convert';
-import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:note_app/token_manager.dart';
 import 'package:note_app/main_page.dart';
-import 'package:pdf/pdf.dart';
-import 'package:pdf/widgets.dart' as pw;
-import 'package:path_provider/path_provider.dart';
-import 'package:share/share.dart';
 
-class EditNote extends StatelessWidget {
+class EditNote extends StatefulWidget {
   final String memoId;
   final String initialTitle;
   final String initialContent;
-
-  final TextEditingController titleController = TextEditingController();
-  final TextEditingController contentController = TextEditingController();
 
   EditNote({
     required this.memoId,
     required this.initialTitle,
     required this.initialContent,
     Key? key,
-  }) : super(key: key) {
-    titleController.text = initialTitle;
-    contentController.text = initialContent;
+  }) : super(key: key);
+
+  @override
+  _EditNoteState createState() => _EditNoteState();
+}
+
+class _EditNoteState extends State<EditNote> {
+  final TextEditingController titleController = TextEditingController();
+  final TextEditingController contentController = TextEditingController();
+  String? attachmentBase64;
+
+  @override
+  void initState() {
+    super.initState();
+    titleController.text = widget.initialTitle;
+    contentController.text = widget.initialContent;
+    fetchAndShowAttachment();
   }
 
-  Future<void> updateNote(BuildContext context) async {
-    final String apiUrl = 'https://notivous.liara.run/Memo/Update';
+  Future<void> updateNote() async {
+    final String apiUrl = 'http://78.157.60.108/Memo/Update';
     final String? token = TokenManager.getToken();
 
     try {
@@ -39,7 +46,7 @@ class EditNote extends StatelessWidget {
           'Authorization': 'Bearer $token',
         },
         body: jsonEncode({
-          'memoId': memoId,
+          'memoId': widget.memoId,
           'title': titleController.text,
           'content': contentController.text,
         }),
@@ -75,60 +82,83 @@ class EditNote extends StatelessWidget {
     }
   }
 
-  Future<void> createPdfAndShare(BuildContext context) async {
-    final pdf = pw.Document();
+  Future<void> fetchAndShowAttachment() async {
+    final String apiUrl = 'http://78.157.60.108/Attachment/Get/${widget.memoId}';
+    final String? token = TokenManager.getToken();
 
-    pdf.addPage(
-      pw.Page(
-        pageFormat: PdfPageFormat.a4,
-        margin: pw.EdgeInsets.all(32),
-        build: (pw.Context context) {
-          return pw.Column(
-            crossAxisAlignment: pw.CrossAxisAlignment.start,
-            children: [
-              pw.Container(
-                padding: pw.EdgeInsets.all(16),
-                decoration: pw.BoxDecoration(
-                  color: PdfColors.blueGrey900,
-                  borderRadius: pw.BorderRadius.circular(4),
-                ),
-                alignment: pw.Alignment.center,
-                child: pw.Text(
-                  '${titleController.text}',
-                  textAlign: pw.TextAlign.center,
-                  style: pw.TextStyle(
-                    fontSize: 24,
-                    fontWeight: pw.FontWeight.bold,
-                    color: PdfColors.white,
-                  ),
-                ),
-              ),
-              pw.SizedBox(height: 20),
-              pw.Container(
-                padding: pw.EdgeInsets.all(16),
-                decoration: pw.BoxDecoration(
-                  color: PdfColors.grey300,
-                  borderRadius: pw.BorderRadius.circular(4),
-                ),
-                child: pw.Text(
-                  '${contentController.text}',
-                  style: pw.TextStyle(
-                    fontSize: 18,
-                    color: PdfColors.black,
-                  ),
-                ),
-              ),
-            ],
-          );
+    try {
+      final response = await http.get(
+        Uri.parse(apiUrl),
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
         },
-      ),
-    );
+      );
 
-    final output = await getTemporaryDirectory();
-    final file = File("${output.path}/${titleController.text}.pdf");
-    await file.writeAsBytes(await pdf.save());
+      print('Response status code: ${response.statusCode}');
+      print('Response body: ${response.body}');
 
-    Share.shareFiles([file.path], text: '${titleController.text}');
+      if (response.statusCode == 200) {
+        setState(() {
+          attachmentBase64 = jsonDecode(response.body) as String;
+        });
+      } else if (response.statusCode == 204) {
+        print('No attachment found for this memo.');
+      } else {
+        print('Error fetching attachment: ${response.statusCode}');
+      }
+    } catch (error) {
+      print('Error fetching attachment: $error');
+    }
+  }
+
+  Future<void> deleteAttachment() async {
+    final String apiUrl = 'http://78.157.60.108/Attachment/Delete/${widget.memoId}';
+    final String? token = TokenManager.getToken();
+
+    try {
+      final response = await http.delete(
+        Uri.parse(apiUrl),
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      print('Delete response status code: ${response.statusCode}');
+      print('Delete response body: ${response.body}');
+
+      if (response.statusCode == 202) {
+        setState(() {
+          attachmentBase64 = null;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Attachment deleted successfully.'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error deleting attachment: ${response.statusCode}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (error) {
+      print('Error deleting attachment: $error');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Please Check Your Internet Connection'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  Future<Uint8List> _downloadImageBytes(String base64String) async {
+    return base64Decode(base64String);
   }
 
   @override
@@ -156,47 +186,19 @@ class EditNote extends StatelessWidget {
         ),
         actions: [
           Padding(
-            padding: const EdgeInsets.only(top: 20.0, right: 7),
-            child: SizedBox(
-              height: 42,
-              width: 42,
-              child: TextButton(
-                style: Theme.of(context).textButtonTheme.style!.copyWith(
-                  backgroundColor:
-                  MaterialStateProperty.all(Color(0xff00ADB5)),
-                  shape: MaterialStateProperty.all(RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  )),
-                ),
-                onPressed: () {
-                  createPdfAndShare(context);
-                },
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Icon(
-                    Icons.share_sharp,
-                    color: Color(0xff2F2E41),
-                    size: 22,
-                  ),
-                ),
-              ),
-            ),
-          ),
-          Padding(
             padding: const EdgeInsets.only(top: 20.0, right: 20),
             child: SizedBox(
               height: 41,
               width: 106,
               child: TextButton(
                 style: Theme.of(context).textButtonTheme.style!.copyWith(
-                  backgroundColor:
-                  MaterialStateProperty.all(Color(0xff00ADB5)),
+                  backgroundColor: MaterialStateProperty.all(Color(0xff00ADB5)),
                   shape: MaterialStateProperty.all(RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   )),
                 ),
                 onPressed: () {
-                  updateNote(context);
+                  updateNote();
                 },
                 child: Text(
                   "Save",
@@ -266,9 +268,40 @@ class EditNote extends StatelessWidget {
                     ),
                   ),
                 ),
-                SizedBox(
-                  height: 20,
-                )
+                SizedBox(height: 20),
+                if (attachmentBase64 != null)
+                  Column(
+                    children: [
+                      FutureBuilder<Uint8List>(
+                        future: _downloadImageBytes(attachmentBase64!),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState == ConnectionState.waiting) {
+                            return Center(child: CircularProgressIndicator());
+                          } else if (snapshot.hasError) {
+                            return Text('Error loading image');
+                          } else if (snapshot.hasData) {
+                            return Image.memory(snapshot.data!);
+                          } else {
+                            return Text('No attachment found');
+                          }
+                        },
+                      ),
+                      SizedBox(height: 20),
+                      TextButton(
+                        onPressed: () {
+                          deleteAttachment();
+                        },
+                        child: Text(
+                          "Delete Attachment",
+                          style: TextStyle(
+                            color: Colors.red,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                if (attachmentBase64 == null)
+                  Text('No attachment found for this memo.'),
               ],
             ),
           ),

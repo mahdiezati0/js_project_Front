@@ -31,7 +31,7 @@ class _ShowFolderState extends State<ShowFolder> {
 
   Future<void> fetchData() async {
     final String apiUrl =
-        'https://notivous.liara.run/Memo/GetByCategory/${widget.categoryId}';
+        'http://78.157.60.108/Memo/GetByCategory/${widget.categoryId}';
 
     try {
       final response = await http.get(
@@ -61,7 +61,7 @@ class _ShowFolderState extends State<ShowFolder> {
   }
 
   Future<void> deleteSelectedNotes() async {
-    final String apiUrl = 'https://notivous.liara.run/Memo/Delete/';
+    final String apiUrl = 'http://78.157.60.108/Memo/Delete/';
 
     try {
       final List<int> selectedIndices = selectedNotes.toList();
