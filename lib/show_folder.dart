@@ -198,6 +198,7 @@ class _ShowFolderState extends State<ShowFolder> {
                             memoId: note['id'],
                             initialTitle: note['title'] ?? '',
                             initialContent: note['content'] ?? '',
+                            initialColor: note['color']??'',
                           ),
                         ),
                       );

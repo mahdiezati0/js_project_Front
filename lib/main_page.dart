@@ -10,6 +10,7 @@ import 'package:note_app/edit_note.dart';
 import 'package:note_app/note_folder.dart';
 import 'package:note_app/show_folder.dart';
 import 'setting.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({Key? key}) : super(key: key);
@@ -34,6 +35,33 @@ class _MainPageState extends State<MainPage> {
     fetchNoteData();
     fetchFolderData();
   }
+
+  void _initializeNotifications() {
+    // Define the on notification pressed event
+    FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+    FlutterLocalNotificationsPlugin();
+    var initializationSettingsAndroid = AndroidInitializationSettings('@mipmap/ic_launcher');
+    var initializationSettingsIOS = IOSInitializationSettings();
+    var initializationSettings = InitializationSettings(
+      android: initializationSettingsAndroid,
+      iOS: initializationSettingsIOS,
+    );
+    flutterLocalNotificationsPlugin.initialize(initializationSettings,
+        onSelectNotification: (String? payload) async {
+          if (payload != null) {
+            // Handle notification payload here
+            if (payload == 'reminder') {
+              // Handle the reminder notification
+              // For example, navigate to the CreateNote page
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => CreateNote()),
+              );
+            }
+          }
+        });
+  }
+
 
   Future<void> _fetchDataWithSearch(String query) async {
     final String searchUrl = 'http://78.157.60.108/Memo/Search?Parameter=$query&SortType=1';
@@ -612,6 +640,7 @@ class _MainPageState extends State<MainPage> {
                                 memoId: note['id'],
                                 initialTitle: note['title'] ?? '',
                                 initialContent: note['content'] ?? '',
+                                initialColor:note['color']??'',
                               ),
                             ),
                           );
