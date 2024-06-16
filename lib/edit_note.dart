@@ -33,6 +33,7 @@ class _EditNoteState extends State<EditNote> {
   late TextEditingController contentController;
   List<String> imageUrls = [];
   bool isLoading = true;
+  List<String> imageBase64s = [];
 
   @override
   void initState() {
@@ -55,6 +56,7 @@ class _EditNoteState extends State<EditNote> {
   Future<void> deleteImage(String imageId) async {
     final String apiUrl = 'http://78.157.60.108/Attachment/Delete/$imageId';
     final String? token = TokenManager.getToken();
+    print('attaxhmwnt is : $imageId');
 
     try {
       final response = await http.delete(
@@ -76,55 +78,100 @@ class _EditNoteState extends State<EditNote> {
     }
   }
 
-
   Future<void> fetchImages() async {
-    final String apiUrl = 'http://78.157.60.108/Attachment/Get/';
+    final String attachmentIdsUrl =
+        'http://78.157.60.108/Attachment/GetAttachmentIds/${widget.memoId}';
     final String? token = TokenManager.getToken();
+    print('memo id is : ${widget.memoId}');
+
     try {
-      final response = await http.get(
-        Uri.parse('$apiUrl${widget.memoId}'),
+      final responseIds = await http.get(
+        Uri.parse(attachmentIdsUrl),
         headers: {
           'Authorization': 'Bearer $token',
         },
       );
-      print('Response status code: ${response.statusCode}');
-      print('Response body: ${response.body}');
+      print('attaxhmwnt is : ${responseIds.body}');
 
-      if (response.statusCode == 200) {
-        setState(() {
-          imageUrls = List<String>.from(json.decode(response.body));
-          isLoading = false;
-        });
-      } else if (response.statusCode == 204) {
-        setState(() {
-          imageUrls = [];
-          isLoading = false;
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('No images found for this note.'),
-            backgroundColor: Colors.red,
-          ),
-        );
-        print('No images found for this note.');
+      final Map<String, dynamic> jsonResponse = json.decode(responseIds.body);
+      final List<dynamic> attachmentIds = jsonResponse['value'] ?? [];
+      print('attachmentIds value is : ${attachmentIds[0]}');
+      print('status code  : ${responseIds.statusCode == 200}');
+
+      if (responseIds.statusCode == 200) {
+        final Map<String, dynamic> jsonResponse = json.decode(responseIds.body);
+        print('Error attachmentId sssssssssssssssss: $jsonResponse.isNotEmpty');
+        print('jsonResponse.isNotEmpty : ${jsonResponse.isNotEmpty}');
+        if (jsonResponse.isNotEmpty) {
+          final String attachmentId = attachmentIds[0];
+          print('Error attachmentId sssssssssssssssss: $attachmentId');
+
+          final String attachmentUrl =
+              'http://78.157.60.108/Attachment/Get/$attachmentId';
+          print('going to request : $attachmentUrl');
+          final responseImages = await http.get(
+            Uri.parse(attachmentUrl),
+            headers: {
+              'Authorization': 'Bearer $token',
+            },
+          );
+
+          if (responseImages.statusCode == 200) {
+            setState(() {
+              imageBase64s = [base64Encode(responseImages.bodyBytes)];
+              isLoading = false;
+            });
+          } else if (responseImages.statusCode == 204) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('File not found or not accessible.'),
+                backgroundColor: Colors.red,
+              ),
+            );
+            setState(() {
+              imageBase64s = [];
+              isLoading = false;
+            });
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Server error: ${responseImages.statusCode}'),
+                backgroundColor: Colors.red,
+              ),
+            );
+            setState(() {
+              isLoading = false;
+            });
+          }
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('No attachment found for this note.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+          setState(() {
+            imageBase64s = [];
+            isLoading = false;
+          });
+        }
       } else {
-        throw Exception('Failed to load images: ${response.body}');
+        throw Exception(
+            'Failed to fetch attachment ids: ${responseIds.statusCode}');
       }
-
     } catch (error) {
       print('Error fetching images: $error');
-      setState(() {
-        isLoading = false;
-      });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Failed to load images. Please try again later.'),
           backgroundColor: Colors.red,
         ),
       );
+      setState(() {
+        isLoading = false;
+      });
     }
   }
-
 
   Future<void> updateNote(BuildContext context) async {
     final String apiUrl = 'https://notivous.liara.run/Memo/Update';
@@ -261,12 +308,12 @@ class _EditNoteState extends State<EditNote> {
               width: 42,
               child: TextButton(
                 style: Theme.of(context).textButtonTheme.style!.copyWith(
-                  backgroundColor:
-                  MaterialStateProperty.all(Color(0xffE0E0E0)),
-                  shape: MaterialStateProperty.all(RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  )),
-                ),
+                      backgroundColor:
+                          MaterialStateProperty.all(Color(0xffE0E0E0)),
+                      shape: MaterialStateProperty.all(RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      )),
+                    ),
                 onPressed: () {
                   createPdfAndShare(context);
                 },
@@ -288,12 +335,12 @@ class _EditNoteState extends State<EditNote> {
               width: 106,
               child: TextButton(
                 style: Theme.of(context).textButtonTheme.style!.copyWith(
-                  backgroundColor:
-                  MaterialStateProperty.all(Color(0xff00ADB5)),
-                  shape: MaterialStateProperty.all(RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  )),
-                ),
+                      backgroundColor:
+                          MaterialStateProperty.all(Color(0xff00ADB5)),
+                      shape: MaterialStateProperty.all(RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      )),
+                    ),
                 onPressed: () {
                   updateNote(context);
                 },
@@ -374,36 +421,36 @@ class _EditNoteState extends State<EditNote> {
                 SizedBox(height: 20),
                 isLoading
                     ? Center(child: CircularProgressIndicator())
-                    : Column(
-                  children: imageUrls.map((url) => Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Image.network(
-                            url,
-                            fit: BoxFit.cover, // تنظیم نحوه جا به جایی تصویر
-                            width: 100, // تعیین عرض تصویر
-                            height: 100, // تعیین ارتفاع تصویر
+                    : imageBase64s.isNotEmpty
+                        ? Column(
+                            children: imageBase64s.map((base64Image) {
+                              return Column(
+                                children: [
+                                  Image.memory(base64Decode(base64Image)),
+                                  SizedBox(height: 16),
+                                ],
+                              );
+                            }).toList(),
+                          )
+                        : Center(
+                            child: Text(
+                              'No images available',
+                              style: TextStyle(color: Colors.red),
+                            ),
                           ),
-                        ),
-                        IconButton(
-                          icon: Icon(Icons.delete),
-                          onPressed: () {
-                            // عملیاتی که باید هنگام کلیک بر روی دکمه حذف انجام شود
-                            // به عنوان مثال:
-                            // deleteImage(imageId); // حذف عکس از API
-                            // imageUrls.remove(url); // حذف عکس از لیست نمایش داده شده
-                            // setState(() {}); // بروزرسانی ویو
-                          },
-                        ),
-                      ],
+                SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                      ),
+                      onPressed: () => deleteImage(widget.memoId),
+                      child: Text('Delete Image'),
                     ),
-                  )).toList(),
+                  ],
                 ),
-                SizedBox(
-                  height: 20,
-                )
               ],
             ),
           ),
